@@ -1,4 +1,5 @@
 # Personal_To-Do-Manager
 ## To-Do App
 
-this is a test to see if this is working
+If you have python and the dependencies installed, just double click Run_App.pyw
+or type .\Run_App.pyw in the terminal/cmd

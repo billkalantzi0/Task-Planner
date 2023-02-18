@@ -92,10 +92,12 @@ class ToDo(ft.UserControl):
         #create a dict
         tasks = {}
         
-        #for each item in 
+        #for each item in tasks, enumerate them (give them a counting up integer)
         for i, task in enumerate(self.tasks.controls):
             tasks[i] = task.task_cb.label
-
+            #print(task[i]) #for debug
+        
+        
         with open('New_tasks.json', 'w') as f:
             json.dump(tasks, f)
         self.update()
@@ -107,6 +109,3 @@ def main(page: ft.Page):
     page.title = 'ToDo'
     todo = ToDo() #here is where we grab the ToDo class
     page.add(todo)
-
-
-ft.app(target=main)
