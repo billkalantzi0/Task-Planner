@@ -90,15 +90,20 @@ class ToDo(ft.UserControl):
 #this needs to be updated to suit the new json file
     def save_tasks(self, e):
         #create a dict
-        tasks = {}
-        
-        
+        tasks = {      
+            "label": "",
+            "Subject": "", 
+            "Description": "",
+            "duration": "1d", 
+            "deadline": "", 
+            "Fudge factor": ""
+        }
         
         #for each item in tasks, enumerate them (give them a counting up integer)
         for i, task in enumerate(self.tasks.controls):
             tasks[i] = task.task_cb.label
-            #print(task[i]) #for debug
-        
+            print(task[i]) #for debug
+    
         
         with open('New_tasks.json', 'w') as f:
             json.dump(tasks, f)
