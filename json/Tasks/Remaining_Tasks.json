@@ -9,7 +9,7 @@
 //.. separated into different folders. i could be wrong, so this might change in V2
  [
     {
-        "label": "0", //primary way to organise task
+        "id": "0", //primary way to organise task
         "Subject": "test", // opening description of task
         "Description": "test_des", //detailed description of task
         "duration": "1d", //time allocation to task, another way to organise task
@@ -18,7 +18,7 @@
             
     },
     {
-        "label": "1",
+        "id": "1",
         "Subject": "test", 
         "Description": "test_des",
         "duration": "1d", 
