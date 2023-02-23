@@ -21,16 +21,16 @@ from flet import (
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Task(UserControl):
-    def __init__(self, task_name, task_status_change, task_delete):
+    def __init__(self, task_name, task_status_change, task_delete, completed=False):
         super().__init__()
-        self.completed = False
+        self.completed = completed
         self.task_name = task_name
         self.task_status_change = task_status_change
         self.task_delete = task_delete
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     def build(self):
         self.display_task = Checkbox(
-            value=False, label=self.task_name, on_change=self.status_changed
+            value=self.completed, label=self.task_name, on_change=self.status_changed
         )
         self.edit_name = TextField(expand=1)
 
@@ -56,7 +56,7 @@ class Task(UserControl):
                 ),
             ],
         )
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         self.edit_view = Row(
             visible=False,
             alignment="spaceBetween",
@@ -72,25 +72,27 @@ class Task(UserControl):
             ],
         )
         return Column(controls=[self.display_view, self.edit_view])
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     def edit_clicked(self, e):
         self.edit_name.value = self.display_task.label
         self.display_view.visible = False
         self.edit_view.visible = True
         self.update()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     def save_clicked(self, e):
         self.display_task.label = self.edit_name.value
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     def status_changed(self, e):
         self.completed = self.display_task.value
         self.task_status_change(self)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        self.update()
+
     def delete_clicked(self, e):
         self.task_delete(self)
+        self.update()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,11 +110,13 @@ class TodoApp(UserControl):
         self.tasks = Column()
 
         for task_dict in tasks:
-            task = Task(task_dict["name"], self.task_status_change, self.task_delete)
-            task.completed = task_dict["completed"]
-            #print(task_dict)
+            task = Task(
+                task_dict["name"],
+                self.task_status_change,
+                self.task_delete,
+                task_dict["completed"]
+            )
             self.tasks.controls.append(task)
-            #print(self.tasks.controls)
 
         self.new_task = TextField(
             hint_text="What needs to be done?",
