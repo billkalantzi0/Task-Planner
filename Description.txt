@@ -1,6 +1,6 @@
 This is a Python code that implements a ToDo application using Flet. 
 The application allows users to create and manage their tasks. 
-The tasks are stored in a JSON file named "tasks.json" in the same directory as the code.
+The tasks are stored in a JSON file named "tasks.json".
 
 The application consists of two classes - Task and TodoApp, both of which are derived from the Flet UserControl class.
 
