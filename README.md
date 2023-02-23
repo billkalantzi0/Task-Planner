@@ -6,7 +6,5 @@ Version 1  Notes:
     Known bugs:
         Completed tasks are recalled as active (not ideal when theyre completed)
 
-How to run app:
-> install Python 
-> install dependencies
-> double click on V1.py 
+How to run app once you've installed the relevent dependencies
+> double click on /py/To-Do-Manager/To-Do-App.py
