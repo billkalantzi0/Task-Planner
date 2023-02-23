@@ -14,23 +14,22 @@ from flet import (
     Text,
     TextField,
     UserControl,
-    colors,
     icons,
 )
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Task(UserControl):
-    def __init__(self, task_name, task_status_change, task_delete):
+    def __init__(self, task_name, task_status_change, task_delete, completed=False):
         super().__init__()
-        self.completed = False
+        self.completed = completed
         self.task_name = task_name
         self.task_status_change = task_status_change
         self.task_delete = task_delete
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     def build(self):
         self.display_task = Checkbox(
-            value=False, label=self.task_name, on_change=self.status_changed
+            value=self.completed, label=self.task_name, on_change=self.status_changed
         )
         self.edit_name = TextField(expand=1)
 
@@ -56,7 +55,7 @@ class Task(UserControl):
                 ),
             ],
         )
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         self.edit_view = Row(
             visible=False,
             alignment="spaceBetween",
@@ -64,33 +63,34 @@ class Task(UserControl):
             controls=[
                 self.edit_name,
                 IconButton(
-                    icon=icons.DONE_OUTLINE_OUTLINED,
-                    icon_color=colors.GREEN,
+                    icon=icons.DONE,
                     tooltip="Update To-Do",
                     on_click=self.save_clicked,
                 ),
             ],
         )
         return Column(controls=[self.display_view, self.edit_view])
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     def edit_clicked(self, e):
         self.edit_name.value = self.display_task.label
         self.display_view.visible = False
         self.edit_view.visible = True
         self.update()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     def save_clicked(self, e):
         self.display_task.label = self.edit_name.value
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     def status_changed(self, e):
         self.completed = self.display_task.value
         self.task_status_change(self)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        self.update()
+
     def delete_clicked(self, e):
         self.task_delete(self)
+        self.update()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,20 +99,21 @@ class TodoApp(UserControl):
         super().__init__()
 
         try:
-            with open("tasks.json", "r") as f:
+            with open("..\\..\\json\\Tasks\\Tasks.json", "r") as f:
                 tasks = json.load(f)
-                #print(tasks)
         except FileNotFoundError:
             tasks = []
 
         self.tasks = Column()
 
         for task_dict in tasks:
-            task = Task(task_dict["name"], self.task_status_change, self.task_delete)
-            task.completed = task_dict["completed"]
-            #print(task_dict)
+            task = Task(
+                task_dict["name"],
+                self.task_status_change,
+                self.task_delete,
+                task_dict["completed"]
+            )
             self.tasks.controls.append(task)
-            #print(self.tasks.controls)
 
         self.new_task = TextField(
             hint_text="What needs to be done?",
@@ -160,7 +161,7 @@ class TodoApp(UserControl):
                 ),
             ],
         )
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
     def add_clicked(self, e):
         if self.new_task.value:
             task = Task(self.new_task.value, self.task_status_change, self.task_delete)
@@ -168,34 +169,56 @@ class TodoApp(UserControl):
             self.new_task.value = ""
             self.new_task.focus()
             self.update()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
     def task_status_change(self, task):
         self.update()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
     def task_delete(self, task):
         self.tasks.controls.remove(task)
         self.update()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
     def tabs_changed(self, e):
-            self.update()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        selected_tab = self.filter.selected_index
+        for task in self.tasks.controls:
+            if selected_tab == 0:
+                task.visible = True
+            elif selected_tab == 1:
+                task.visible = not task.completed
+            elif selected_tab == 2:
+                task.visible = task.completed
+        self.update()
+
     def clear_clicked(self, e):
         self.tasks.controls = [task for task in self.tasks.controls if not task.completed]
         self.update()
-     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
     def save_tasks(self, e):
         tasks = []
+        
+        
         for task in self.tasks.controls:
-            tasks.append({"name": task.display_task.label, "completed": task.completed})
-        with open("tasks.json", "w") as f:
+            tasks.append(
+                {
+                    "name": task.display_task.label, 
+                    "completed": task.completed,
+                    "id": None,
+                    "Subject": None,
+                    "Description": None,
+                    "duration": None,
+                    "deadline": None,
+                    "Fudge factor": False
+                    }
+                )
+        with open("..\\..\\json\\Tasks\\Tasks.json", "w") as f:
             json.dump(tasks, f)
         self.update()
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 def main(page: Page):
     page.title = "ToDo App"
     page.window_height = 600
-    page.window_width = 600
+    page.window_width = 500
     page.horizontal_alignment = "center"
     page.scroll = "adaptive"
     page.update()
