@@ -7,6 +7,6 @@ Version 1  Notes:
         Completed tasks are recalled as active (not ideal when theyre completed)
 
 How to run app:
-    install Python 
-    install dependencies
-    double click on V1.py 
+> install Python 
+> install dependencies
+> double click on V1.py 
