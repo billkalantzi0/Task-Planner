@@ -1,4 +1,4 @@
-# Personal_To-Do-Manager
+# Personal task planner
 ## To-Do App Daily Personal Task Manager
 Version 1  Notes:
     New: 
