@@ -33,6 +33,7 @@ class Task(UserControl):
         )
         self.edit_name = TextField(expand=1)
 
+        #this will be returned by the end of this function to be called in the to-do app
         self.display_view = Row(
             alignment="spaceBetween",
             vertical_alignment="center",
@@ -55,7 +56,8 @@ class Task(UserControl):
                 ),
             ],
         )
-
+        
+        #this too will be returned by the end of this function to be called in the to-do app
         self.edit_view = Row(
             visible=False,
             alignment="spaceBetween",
@@ -98,23 +100,27 @@ class TodoApp(UserControl):
     
     def __init__(self):
         super().__init__() 
+        ##try / catch statement to find or create a json file
         try:
             with open("..\\..\\json\\Tasks\\Tasks.json", "r") as f:
-                tasks = json.load(f)
+                tasks = json.load(f) #load the json file into a vairiable 
         except FileNotFoundError:
-            tasks = []
-
-        self.tasks = Column()
-
+            tasks = [] #create an array, where we can store the data soon to go into a json file
+        #after this try catch block, the array "tasks" now should contain json data or be empty json data
+        
+        self.tasks = Column() #this outputs "column{}"
+    
         for task_dict in tasks:
-            task = Task(
-                task_dict["name"],
+            task = Task( #call the task class
+                 
+                task_dict["name"], #extracting the name from the json
                 self.task_status_change,
-                self.task_delete,
-                task_dict["completed"]
+                self.task_delete, #has to be in this order to establish the tasks first.
+                task_dict["completed"] #extracting the completed state from the json
+                #task_dict["deadline"], #extracting the deadline from the json                
             )
-            self.tasks.controls.append(task)
-
+            self.tasks.controls.append(task) #append to controls, the parameters we just extracted
+        
         self.new_task = TextField(
             hint_text="What needs to be done?",
             on_submit=self.add_clicked,
@@ -208,12 +214,14 @@ class TodoApp(UserControl):
     def save_tasks(self, e):
         tasks = []
         
+        #print(self.tasks.controls[1].completed) #debug
         
         for task in self.tasks.controls:
             tasks.append(
                 {
                     "name": task.display_task.label, 
                     "completed": task.completed,
+                   
                     "id": None,
                     "Subject": None,
                     "Description": None,

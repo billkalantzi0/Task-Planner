@@ -17,3 +17,10 @@ The class has methods to handle events associated with these controls.
 
 The application reads the tasks from the "tasks.json" file and populates the task list when it starts. 
 The application saves the task list to the "tasks.json" file when the user clicks the Save button.
+
+Known error after 1.0.1 
+The code used to call the tasks.json file assumes you are cd'd in the py/app/script.py folder.
+This means that There has to be a better way of ensuring the json file isnt lost when converting it into an exe, or 
+even when you python /py/app/script.py, as this does not mean you have cd'd into the folder meaning it cannot call the 
+json file as you \\..\\ into a completly different folder. potential fix is to just keep the json in the same folder 
+as the python script. 
