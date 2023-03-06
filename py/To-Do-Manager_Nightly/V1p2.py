@@ -1,110 +1,85 @@
 import flet
 import json
-
-from flet import (
-    Checkbox,
-    Column,
-    FloatingActionButton,
-    IconButton,
-    OutlinedButton,
-    Page,
-    Row,
-    Tab,
-    Tabs,
-    Text,
-    TextField,
-    UserControl,
-    icons,
-)
+from flet import (Checkbox, Column, FloatingActionButton, IconButton, OutlinedButton, Page, Row, Tab, Tabs, Text, TextField, UserControl, icons)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 class Task(UserControl):
-    def __init__(self, task_name, task_status_change, task_delete, completed=False, deadline=None): #deadline was added
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def __init__(self, task_name, task_status_change, task_delete, completed=False, deadline=None, duration=None): #newest additions: deadline, duration
         super().__init__()
         self.completed = completed
         self.task_name = task_name
-        self.deadline = deadline #this was added
+        self.deadline = deadline #Newest addition
+        self.duration = duration #Newest addition
         self.task_status_change = task_status_change
         self.task_delete = task_delete
-
-    #this entire fuction was added
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def to_dict(self):
-        return {
+        return { #add to this section, when creating a new field
             "name": self.task_name,
             "completed": self.completed,
-            "deadline": self.deadline
+            "deadline": self.deadline,
+            "duration": self.duration
         }
-
-    
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def build(self):
-        self.display_task = Checkbox(
-            value=self.completed, label=self.task_name, on_change=self.status_changed
-        )
+        #this pretains to each task. we create a function that will make sure each task has its own things
+        #creates checkboxes for each task, but is not called here
+        self.display_task = Checkbox( value=self.completed, label=self.task_name, on_change=self.status_changed )
+        #creates the tasks below the user input but is not called here
         self.edit_name = TextField(label="Task", multiline=True, expand=2)
-        self.edit_deadline = TextField(label="Deadline",expand=1) #this was added
-
-        #this will be returned by the end of this function to be called in the to-do app
-        self.display_view = Row(
-            alignment="spaceBetween",
-            vertical_alignment="center",
-            controls=[
-                self.display_task,
-                Row(
-                    spacing=0,
-                    controls=[
-                        IconButton(
-                            icon=icons.CREATE_OUTLINED,
-                            tooltip="Edit To-Do",
-                            on_click=self.edit_clicked,
-                        ),
-                        IconButton(
-                            icons.DELETE_OUTLINE,
-                            tooltip="Delete To-Do",
-                            on_click=self.delete_clicked,
-                        ),
-                    ],
-                ),
-            ],
-        )
+        #cretes deadline field for each task but is not called here
+        self.edit_deadline = TextField(label="Deadline",expand=1) #this was added for the new text line
+        #creates duration field for each task but not called here
+        self.edit_duration = TextField(label ="Duration", expand=1) #i added this
+        #this will be returned by the end of this function to be called in the to-do app. Creates the field to EDIT task, and DELETE it
+        self.display_view = Row( alignment="spaceBetween", vertical_alignment="center", 
+                                controls=[
+                                    #this task is now called from above
+                                    self.display_task, 
+                                    Row(
+                                        spacing=0, 
+                                        controls=[
+                                            IconButton( icon=icons.CREATE_OUTLINED, tooltip="Edit To-Do", on_click=self.edit_clicked),
+                                            IconButton( icon=icons.DELETE_OUTLINE, tooltip="Delete To-Do", on_click=self.delete_clicked),
+                                            ],
+                                        ),
+                                    ],
+                                )
         
         #this too will be returned by the end of this function to be called in the to-do app
-        self.edit_view = Row(
-            visible=False,
-            alignment="spaceBetween",
-            vertical_alignment="center",
-            controls=[
-                self.edit_name,
-                self.edit_deadline, #this was added. 
-                IconButton(
-                    icon=icons.DONE,
-                    tooltip="Update To-Do",
-                    on_click=self.save_clicked,
-                ),
-            ],
-        )
-        return Column(controls=[self.display_view, self.edit_view])
-
+        self.edit_view = Row( visible=False, alignment="spaceBetween", vertical_alignment="center",
+                             controls=[
+                                 self.edit_name, # this is now called from above
+                                 self.edit_deadline, #newest addition
+                                 self.edit_duration, #newest addition 
+                                 IconButton( icon=icons.DONE, tooltip="Update To-Do", on_click=self.save_clicked),
+                                ],
+                             )
+        return Column(controls=[self.display_view, self.edit_view]) #this is the return from def BUILD
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def edit_clicked(self, e):
-        self.edit_name.value = self.display_task.label
+        self.edit_name.value = self.display_task.label 
         self.edit_deadline.value =self.deadline or "" #this was added
+        self.edit_duration.value=self.duration or "" # I added this
         self.display_view.visible = False
         self.edit_view.visible = True
         self.update()
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def save_clicked(self, e):
         self.display_task.label = self.edit_name.value
         self.deadline = self.edit_deadline.value or None #this was added
+        self.duration = self.edit_duration.value or None #i added this 
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def status_changed(self, e):
         self.completed = self.display_task.value
         self.task_status_change(self)
         self.update()
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def delete_clicked(self, e):
         self.task_delete(self)
         self.update()
@@ -112,76 +87,66 @@ class Task(UserControl):
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TodoApp(UserControl):
-    
-    def __init__(self):
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #overall purpose of init: to populate the app with tasks
+    def __init__(self): 
         super().__init__() 
-        ##try / catch statement to find or create a json file
+        #create "tasks" dict to store tasks in program in a try - catch thing
         try:
             with open("..\\..\\json\\Tasks\\Tasks.json", "r") as f:
                 tasks = json.load(f) #load the json file into a vairiable 
         except FileNotFoundError:
             tasks = [] #create an array, where we can store the data soon to go into a json file
-        #after this try catch block, the array "tasks" now should contain json data or be empty json data
-        
-        self.tasks = Column() #this outputs "column{}"
-    
+            
+        self.tasks = Column() #this makes a vairiable be considered a design column
+        #retrieve task information from json and place it into the tasks dict
         for task_dict in tasks:
+            #extract itteratively each task
             task = Task( #call the task class
-                 
-                task_dict["name"], #extracting the name from the json
-                self.task_status_change,
-                self.task_delete, #has to be in this order to establish the tasks first.
-                task_dict["completed"], #extracting the completed state from the json
-                task_dict.get("deadline") #extracting the deadline from the json (if it exists)
-            )
-            self.tasks.controls.append(task) #append to controls, the parameters we just extracted
-        
-        self.new_task = TextField(
-            hint_text="What needs to be done?",
-            on_submit=self.add_clicked,
-            expand=True)
-
-        self.filter = Tabs(
-            selected_index=0,
-            on_change=self.tabs_changed,
-            tabs=[Tab(text="all"), Tab(text="active"), Tab(text="completed")])
-        
+                        task_dict["name"], 
+                        self.task_status_change,
+                        self.task_delete, 
+                        task_dict["completed"], 
+                        task_dict["deadline"], #New addition
+                        task_dict["duration"] #new addition
+                        )
+            #append each block of task information into a column based list of tasks.
+            self.tasks.controls.append(task)
+        #This is where the task-bar is created, but not called
+        self.new_task = TextField( hint_text="What needs to be done?", on_submit=self.add_clicked, expand=True)
+        #this is where the filter tabs are created!
+        self.filter = Tabs( selected_index=0, on_change=self.tabs_changed, tabs=[Tab(text="all"), Tab(text="active"), Tab(text="completed")])
+        #this is where the counter is created! - it then changes when you use the app
         self.items_left = Text("0 items left")
+        #this is where the add and save icons are craated, next to the task-bar, but not called
         self.save_button = FloatingActionButton(icon=icons.SAVE, on_click=self.save_tasks)
         self.add_button = FloatingActionButton(icon=icons.ADD, on_click=self.add_clicked)
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def build(self):
-        return Column(
-            width=600,
-            controls=[                
-                Row(
-                    controls=[
-                        self.new_task,
-                        self.add_button,
-                        self.save_button,
-                    ],
-                ),
-                Column(
-                    spacing=25,
-                    controls=[
-                        self.filter,
-                        self.tasks,
-                        Row(
-                            alignment="spaceBetween",
-                            vertical_alignment="center",
-                            controls=[
-                                self.items_left,
-                                OutlinedButton(
-                                    text="Clear completed", on_click=self.clear_clicked
-                                ),
-                            ],
-                        ),
-                    ],
-                ),
-            ],
-        )
-    
-
+        #here we build the complete app, we assemble all the pieces
+        return Column( width=600, controls=[      #create a column where everything can go into, a "wrapper"          
+                                             Row(   #creates rows to populate
+                                                 controls=[
+                                                     self.new_task, # add the new-task bar into row 1
+                                                     self.add_button, #add the "add" button into row 2
+                                                     self.save_button, #add the "save" button into row 3
+                                                     ],
+                                                 ),
+                                             Column( spacing=25, #go to the next column below the 3 rows that were written, above
+                                                    controls=[
+                                                        self.filter, # add the filter bar created above
+                                                        self.tasks, #call the column based list of tasks
+                                                        Row( alignment="spaceBetween", vertical_alignment="center", # create a 2 rows below the tasks where..
+                                                            controls=[ 
+                                                                      self.items_left, #you display the incompleted tasks in row 1...
+                                                                      OutlinedButton( text="Clear completed", on_click=self.clear_clicked ), #and provide a clear button in row 2
+                                                                      ],
+                                                            ),
+                                                        ],
+                                                    ),
+                                             ],
+                      )
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def add_clicked(self, e):
         if self.new_task.value:
             task = Task(self.new_task.value, self.task_status_change, self.task_delete)
@@ -189,14 +154,14 @@ class TodoApp(UserControl):
             self.new_task.value = ""
             self.new_task.focus()
             self.update()
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def task_status_change(self, task):
         self.update()
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def task_delete(self, task):
         self.tasks.controls.remove(task)
         self.update()
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def tabs_changed(self, e):
         selected_tab = self.filter.selected_index
         for task in self.tasks.controls:
@@ -207,26 +172,23 @@ class TodoApp(UserControl):
             elif selected_tab == 2:
                 task.visible = task.completed
         self.update()
-        
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def update(self):
         status = self.filter.tabs[self.filter.selected_index].text
         count = 0
         for task in self.tasks.controls:
             task.visible = (
-                status == "all"
-                or (status == "active" and task.completed == False)
-                or (status == "completed" and task.completed)
+                status == "all" or (status == "active" and task.completed == False) or (status == "completed" and task.completed)
             )
             if not task.completed:
                 count += 1
         self.items_left.value = f"{count} active item(s) left"
         super().update()
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
     def clear_clicked(self, e):
         self.tasks.controls = [task for task in self.tasks.controls if not task.completed]
         self.update()
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
     def save_tasks(self, e):
         tasks = []
         for task in self.tasks.controls:
@@ -234,18 +196,18 @@ class TodoApp(UserControl):
                 {
                     "name": task.display_task.label, 
                     "completed": task.completed,
-                    "deadline": task.deadline,
+                    "deadline": task.deadline, # this was added
                     "id": None,
                     "Subject": None,
                     "Description": None,
-                    "duration": None,
+                    "duration": task.duration, #this was added
                     "Fudge factor": False
                 }
             )
         with open("..\\..\\json\\Tasks\\Tasks.json", "w") as f:
             json.dump(tasks, f)
         self.update()
-
+        
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 def main(page: Page):
