@@ -1,1 +1,0 @@
-The python version creates a json to store the tasks in for persistantance. the exe does not do this. 
