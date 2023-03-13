@@ -1,6 +1,6 @@
 import flet
 import json
-
+from tkinter import *
 from flet import (
     Checkbox,
     Column,
@@ -214,8 +214,6 @@ class TodoApp(UserControl):
     def save_tasks(self, e):
         tasks = []
         
-        #print(self.tasks.controls[1].completed) #debug
-        
         for task in self.tasks.controls:
             tasks.append(
                 {
@@ -236,14 +234,27 @@ class TodoApp(UserControl):
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-def main(page: Page):
+def main(page: Page):   
+    #page.horizontal_alignment = "center" #old code, didnt work
     page.title = "To Do App"
-    page.window_height = 600
-    page.window_width = 500
-    page.horizontal_alignment = "center"    
+    #grab screen dimentions
+    root = Tk()
+    screen_width = root.winfo_screenwidth()
+   
+    #app dimentions
+    page.window_height = 300
+    page.window_width = 1500
+    center_of_app = page.window_width*0.5
+    
+    #app Positioning
+    page.window_top = 0
+    page.window_left = screen_width*0.5 - center_of_app
+    
+    page.window_always_on_top = True
+    page.window_frameless = True
     page.scroll = "adaptive"
     page.update()
-
+    
     # create application instance
     app = TodoApp()
         

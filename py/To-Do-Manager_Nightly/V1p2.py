@@ -1,6 +1,7 @@
 import flet
 import json
-import speech_recognition as sr
+from tkinter import Tk
+#import speech_recognition as sr
 from flet import (Checkbox, Column, FloatingActionButton, IconButton, OutlinedButton, Page, Row, Tab, Tabs, Text, TextField, UserControl, icons)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,18 +123,17 @@ class TodoApp(UserControl):
         #this is where the add and save icons are craated, next to the task-bar, but not called
         self.save_button = FloatingActionButton(icon=icons.SAVE, on_click=self.save_tasks)
         self.add_button = FloatingActionButton(icon=icons.ADD, on_click=self.add_clicked)
-        self.speech_button = FloatingActionButton(icon=icons.MIC, on_click=self.speech_clicked)
+        #self.speech_button = FloatingActionButton(icon=icons.MIC, on_click=self.speech_clicked)
         
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def build(self):
         #here we build the complete app, we assemble all the pieces
-        return Column( width=600, controls=[      #create a column where everything can go into, a "wrapper"          
+        return Column( width=1450, controls=[      #create a column where everything can go into, a "wrapper"          
                                              Row(   #creates rows to populate
                                                  controls=[
                                                      self.new_task, # add the new-task bar into row 1
                                                      self.add_button, #add the "add" button into row 2
-                                                     self.speech_button, #add speech button to row 3
-                                                     self.save_button, #add the "save" button into row 4
+                                                     self.save_button, #add the "save" button into row 3
                                                      ],
                                                  ),
                                              Column( spacing=25, #go to the next column below the 3 rows that were written, above
@@ -142,36 +142,15 @@ class TodoApp(UserControl):
                                                         self.tasks, #call the column based list of tasks
                                                         Row( alignment="spaceBetween", vertical_alignment="center", # create a 2 rows below the tasks where..
                                                             controls=[ 
-                                                                      self.items_left, #you display the incompleted tasks in row 1...
-                                                                      OutlinedButton( text="Clear completed", on_click=self.clear_clicked ), #and provide a clear button in row 2
+                                                                      self.items_left, #you display the incompleted tasks in row 1 of this new column
+                                                                      OutlinedButton( text="Clear completed", on_click=self.clear_clicked ), #and provide a clear button in row 2 of this new column
                                                                       ],
                                                             ),
                                                         ],
                                                     ),
                                              ],
-                      )
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def speech_clicked(self, e):
-        #in beta!
-        import speech_recognition as sr
-
-        # initialize the recognizer
-        r = sr.Recognizer()
-
-        # define the microphone as source
-        with sr.Microphone() as source:
-            print("Say something!")
-            audio = r.listen(source) # capture the audio input
-
-        # recognize speech using Google Speech Recognition
-        try:
-            text = r.recognize_google(audio)
-            print("You said: {}".format(text))
-        except sr.UnknownValueError:
-            print("Google Speech Recognition could not understand audio")
-        except sr.RequestError as e:
-            print("Could not request results from Google Speech Recognition service; {}".format(e))
-
+                      )       
+        
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def add_clicked(self, e):
         if self.new_task.value:
@@ -223,8 +202,8 @@ class TodoApp(UserControl):
                     "name": task.display_task.label, 
                     "completed": task.completed,
                     "deadline": task.deadline, # this was added
-                    "id": None,
-                    "Subject": None,
+                    "id": None, #is this backend?
+                    "Subject": None, 
                     "Description": None,
                     "duration": task.duration, #this was added
                     "Fudge factor": False
@@ -237,10 +216,23 @@ class TodoApp(UserControl):
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 def main(page: Page):
+    #page.horizontal_alignment = "center" #old code, didnt work
     page.title = "To Do App"
-    page.window_height = 600
-    page.window_width = 500
-    page.horizontal_alignment = "center"    
+    #grab screen dimentions
+    root = Tk()
+    screen_width = root.winfo_screenwidth()
+   
+    #app dimentions
+    page.window_height = 400
+    page.window_width = 1500
+    center_of_app = page.window_width*0.5
+    
+    #app Positioning
+    page.window_top = 0
+    page.window_left = screen_width*0.5 - center_of_app
+    
+    page.window_always_on_top = True
+    page.window_frameless = True
     page.scroll = "adaptive"
     page.update()
 
