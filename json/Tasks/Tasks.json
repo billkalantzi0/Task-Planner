@@ -1,1 +1,32 @@
-[{"name": "new task", "completed": false, "deadline": "12/12/23", "id": null, "Subject": null, "Description": null, "duration": "1.2w", "Fudge factor": false}, {"name": "things to do ", "completed": false, "deadline": null, "id": null, "Subject": null, "Description": null, "duration": null, "Fudge factor": false}]
+[
+    {
+        "name": "new task",
+        "completed": false,
+        "deadline": "12/12/23",
+        "id": null,
+        "Subject": null,
+        "Description": null,
+        "duration": "1.2w",
+        "Fudge factor": false
+    },
+    {
+        "name": "things to do ",
+        "completed": false,
+        "deadline": null,
+        "id": null,
+        "Subject": null,
+        "Description": null,
+        "duration": null,
+        "Fudge factor": false
+    },
+    {
+        "name": "lets make another PR for Eva ",
+        "completed": false,
+        "deadline": "12/12/23",
+        "id": null,
+        "Subject": null,
+        "Description": null,
+        "duration": "2days",
+        "Fudge factor": false
+    }
+]
